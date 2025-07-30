@@ -138,11 +138,18 @@ export function AdminPanel() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            BOT_TOKEN: telegramBotToken,
+            CHANNEL_USERNAME: telegramChannelId,
             messages: [{ type: 'combined', content: generatedMessages }]
           })
         });
 
-        progress['combined'] = response.ok ? 'success' : 'error';
+        if (response.ok) {
+          const result = await response.json();
+          progress['combined'] = result.success ? 'success' : 'error';
+        } else {
+          progress['combined'] = 'error';
+        }
       } catch {
         progress['combined'] = 'error';
       }

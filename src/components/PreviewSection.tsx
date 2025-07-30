@@ -173,6 +173,17 @@ export function PreviewSection({
             </div>
           </div>
         )}
+
+        {/* Loading Overlay for Generate Preview */}
+        {isGenerating && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-background rounded-lg p-8 max-w-md w-full mx-4 text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+              <h2 className="text-2xl font-bold mb-2">Generating Message</h2>
+              <p className="text-muted-foreground">Please wait while we create your message preview...</p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
