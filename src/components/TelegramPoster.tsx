@@ -29,10 +29,10 @@ export function TelegramPoster({
   const [showConfetti, setShowConfetti] = useState(false);
   const { toast } = useToast();
 
-  const canPost = selectedTypes.length > 0 && 
-                  Object.keys(generatedMessages).length > 0 && 
-                  telegramConfig.botToken && 
-                  telegramConfig.channelId;
+  const canPost = selectedTypes.length > 0 &&
+    Object.keys(generatedMessages).length > 0 &&
+    telegramConfig.botToken &&
+    telegramConfig.channelId;
 
   const completedCount = Object.values(postingProgress).filter(status => status === 'success').length;
   const errorCount = Object.values(postingProgress).filter(status => status === 'error').length;
@@ -67,7 +67,7 @@ export function TelegramPoster({
           <div className="absolute inset-0 bg-gradient-primary opacity-10 animate-pulse" />
         </div>
       )}
-      
+
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-foreground">
           <Send className="w-5 h-5 text-primary" />
@@ -77,7 +77,7 @@ export function TelegramPoster({
           Post generated messages to your Telegram channel
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export function TelegramPoster({
               </Badge>
             )}
           </div>
-          
+
           <Button
             onClick={handlePost}
             disabled={!canPost || isPosting}
@@ -144,12 +144,12 @@ export function TelegramPoster({
                 {errorCount > 0 && ` (${errorCount} failed)`}
               </span>
             </div>
-            
-            <Progress 
-              value={progressPercentage} 
+
+            <Progress
+              value={progressPercentage}
               className="h-2 bg-secondary/30"
             />
-            
+
             <div className="space-y-2">
               {Object.entries(postingProgress).map(([type, status], index) => (
                 <div
@@ -163,11 +163,11 @@ export function TelegramPoster({
                       {type}
                     </Badge>
                   </div>
-                  
+
                   <span className="text-xs text-muted-foreground capitalize">
-                    {status === 'success' ? 'Posted ✓' : 
-                     status === 'error' ? 'Failed ✗' :
-                     status === 'posting' ? 'Posting...' : 'Pending'}
+                    {status === 'success' ? 'Posted ✓' :
+                      status === 'error' ? 'Failed ✗' :
+                        status === 'posting' ? 'Posting...' : 'Pending'}
                   </span>
                 </div>
               ))}

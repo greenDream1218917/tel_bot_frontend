@@ -29,6 +29,10 @@ export function AdminPanel() {
   const [telegramChannelId, setTelegramChannelId] = useState('');
   const [openaiKeyValidation, setOpenaiKeyValidation] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
 
+  // Modal State
+  const [showDataModal, setShowDataModal] = useState(false);
+  const [modalData, setModalData] = useState<any>(null);
+
   const { toast } = useToast();
 
   // API Functions
@@ -49,7 +53,12 @@ export function AdminPanel() {
 
       const data = await response.json();
       setFetchedData(prev => ({ ...prev, [type]: data.responses[0] }));
-      console.log(fetchedData);
+
+      // Show modal with fetched data
+      setModalData(data.responses[0]);
+      setShowDataModal(true);
+
+      // console.log(data.responses[0]);
       toast({
         title: "Data fetched",
         description: `Successfully fetched ${type} signal data`,
@@ -71,30 +80,37 @@ export function AdminPanel() {
     try {
       setIsGenerating(true);
       const messages: Record<string, string> = {};
+      let fetchedDataString = "";
 
+      // Include all fetched data for selected types
       for (const type of selectedTypes) {
-        if (!fetchedData[type]) continue;
+        if (!fetchedData["/" + type]) continue;
+        fetchedDataString += `${fetchedData["/" + type]}\n\n`;
+      }
+      console.log(fetchedDataString);
+      const response = await fetch('http://localhost:8000/api/generate-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: openaiKey,
+          prompt: prompt.replace('{{data}}', fetchedDataString),
+        })
+      });
 
-        const response = await fetch('http://localhost:8000/api/generate-message', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            api_key: openaiKey,
-            prompt: prompt.replace('{{data}}', JSON.stringify(fetchedData[type])),
-            data: fetchedData[type]
-          })
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          messages[type] = result.content;
+      if (response.ok) {
+        const result = await response.json();
+        // Store the generated message for all selected types
+        for (const type of selectedTypes) {
+          if (fetchedData[type]) {
+            messages[type] = result.content;
+          }
         }
       }
 
       setGeneratedMessages(messages);
       toast({
         title: "Preview generated",
-        description: `Generated ${Object.keys(messages).length} messages`,
+        description: `Generated ${Object.keys(messages).length} message previews`,
       });
     } catch (error) {
       toast({
@@ -196,11 +212,8 @@ export function AdminPanel() {
         {/* Header */}
         <div className="text-center space-y-4 animate-fade-in">
           <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Crypto Signals Admin Panel
+            Elite Signals Admin Panel
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Select signals, craft prompts, generate messages, and post to Telegram with ease
-          </p>
         </div>
 
         {/* Main Grid */}
@@ -247,6 +260,43 @@ export function AdminPanel() {
           </div>
         </div>
       </div>
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-8 max-w-md w-full mx-4 text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+            <h2 className="text-2xl font-bold mb-2">Fetching Signal Data</h2>
+            <p className="text-muted-foreground">Please wait while we retrieve the latest signal information...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Data Modal */}
+      {showDataModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Fetched Signal Data</h2>
+              <button
+                onClick={() => setShowDataModal(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-muted p-4 rounded-lg">
+                <pre className="whitespace-pre-wrap text-sm overflow-x-auto">
+                  {JSON.stringify(modalData, null, 2)}
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

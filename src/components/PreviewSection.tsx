@@ -82,7 +82,7 @@ export function PreviewSection({
               </Badge>
             )}
           </div>
-          
+
           <Button
             onClick={onGeneratePreview}
             disabled={!canGenerate || isGenerating}
