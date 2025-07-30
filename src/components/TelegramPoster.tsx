@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface TelegramPosterProps {
   selectedTypes: string[];
-  generatedMessages: Record<string, string>;
+  generatedMessages: string;
   onPostToTelegram: () => void;
   isPosting: boolean;
   postingProgress: Record<string, 'pending' | 'posting' | 'success' | 'error'>;
@@ -30,7 +30,7 @@ export function TelegramPoster({
   const { toast } = useToast();
 
   const canPost = selectedTypes.length > 0 &&
-    Object.keys(generatedMessages).length > 0 &&
+    generatedMessages &&
     telegramConfig.botToken &&
     telegramConfig.channelId;
 
@@ -82,7 +82,7 @@ export function TelegramPoster({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              {Object.keys(generatedMessages).length} messages ready
+              {generatedMessages ? "1 message ready" : "No messages"}
             </Badge>
             {telegramConfig.botToken && telegramConfig.channelId && (
               <Badge variant="secondary" className="text-xs bg-success/20 text-success border-success/30">

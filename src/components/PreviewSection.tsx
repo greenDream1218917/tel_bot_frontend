@@ -11,7 +11,7 @@ interface PreviewSectionProps {
   prompt: string;
   fetchedData: Record<string, any>;
   onGeneratePreview: () => void;
-  generatedMessages: Record<string, string>;
+  generatedMessages: string;
   isGenerating: boolean;
   openaiKey: string;
 }
@@ -115,41 +115,62 @@ export function PreviewSection({
           </div>
         )}
 
-        {Object.keys(generatedMessages).length > 0 && (
+        {generatedMessages && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-foreground">Generated Messages:</h4>
-            <ScrollArea className="max-h-96">
-              <div className="space-y-3 pr-4">
-                {Object.entries(generatedMessages).map(([type, message], index) => (
-                  <div
-                    key={type}
-                    className="p-4 bg-secondary/30 border border-border rounded-lg animate-bounce-in relative"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium text-foreground">Generated Message:</h4>
+            <div className="h-96 border border-border rounded-lg overflow-hidden">
+              <ScrollArea className="h-full w-full">
+                <div className="p-4">
+                  <div className="bg-secondary/30 border border-border rounded-lg animate-bounce-in relative">
+                    <div className="flex items-center justify-between mb-3 p-3 bg-secondary/30 rounded-t-lg border-b border-border">
                       <Badge variant="outline" className="text-xs">
-                        {type}
+                        Combined Signal
                       </Badge>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(message, type)}
+                        onClick={() => copyToClipboard(generatedMessages, "combined")}
                         className="h-6 w-6 p-0"
                       >
-                        {copiedItems.has(type) ? (
+                        {copiedItems.has("combined") ? (
                           <Check className="w-3 h-3 text-success" />
                         ) : (
                           <Copy className="w-3 h-3" />
                         )}
                       </Button>
                     </div>
-                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                      {message}
-                    </p>
+                    <div className="p-3">
+                      <div className="overflow-x-auto">
+                        <pre className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans min-w-max">
+                          {generatedMessages}
+                        </pre>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Copy Button */}
+            <div className="flex justify-center">
+              <Button
+                onClick={() => copyToClipboard(generatedMessages, "message")}
+                variant="outline"
+                className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+              >
+                {copiedItems.has("message") ? (
+                  <>
+                    <Check className="w-4 h-4 text-success" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copy Message
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>

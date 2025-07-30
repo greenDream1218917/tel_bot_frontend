@@ -16,7 +16,7 @@ export function AdminPanel() {
   const [prompt, setPrompt] = useState('');
 
   // Preview State
-  const [generatedMessages, setGeneratedMessages] = useState<Record<string, string>>({});
+  const [generatedMessages, setGeneratedMessages] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Telegram Posting State
@@ -79,7 +79,7 @@ export function AdminPanel() {
 
     try {
       setIsGenerating(true);
-      const messages: Record<string, string> = {};
+      let message: string = "";
       let fetchedDataString = "";
 
       // Include all fetched data for selected types
@@ -100,17 +100,13 @@ export function AdminPanel() {
       if (response.ok) {
         const result = await response.json();
         // Store the generated message for all selected types
-        for (const type of selectedTypes) {
-          if (fetchedData[type]) {
-            messages[type] = result.content;
-          }
-        }
+        message = result.generated_text;
       }
 
-      setGeneratedMessages(messages);
+      setGeneratedMessages(message);
       toast({
         title: "Preview generated",
-        description: `Generated ${Object.keys(messages).length} message previews`,
+        description: `Generated message preview`,
       });
     } catch (error) {
       toast({
@@ -124,41 +120,34 @@ export function AdminPanel() {
   };
 
   const postToTelegram = async () => {
-    if (!telegramBotToken || !telegramChannelId) return;
+    if (!telegramBotToken || !telegramChannelId || !generatedMessages) return;
 
     try {
       setIsPosting(true);
-      const progress: Record<string, 'pending' | 'posting' | 'success' | 'error'> = {};
-
-      // Initialize progress
-      Object.keys(generatedMessages).forEach(type => {
-        progress[type] = 'pending';
-      });
+      const progress: Record<string, 'pending' | 'posting' | 'success' | 'error'> = {
+        'combined': 'pending'
+      };
       setPostingProgress(progress);
 
-      // Post each message
-      for (const [type, content] of Object.entries(generatedMessages)) {
-        progress[type] = 'posting';
-        setPostingProgress({ ...progress });
+      // Post the combined message
+      progress['combined'] = 'posting';
+      setPostingProgress({ ...progress });
 
-        try {
-          const response = await fetch('http://localhost:8000/api/send-signal', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              messages: [{ type, content }]
-            })
-          });
+      try {
+        const response = await fetch('http://localhost:8000/api/send-signal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ type: 'combined', content: generatedMessages }]
+          })
+        });
 
-          progress[type] = response.ok ? 'success' : 'error';
-        } catch {
-          progress[type] = 'error';
-        }
-
-        setPostingProgress({ ...progress });
-        // Add delay between posts
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        progress['combined'] = response.ok ? 'success' : 'error';
+      } catch {
+        progress['combined'] = 'error';
       }
+
+      setPostingProgress({ ...progress });
 
       const successCount = Object.values(progress).filter(status => status === 'success').length;
       toast({

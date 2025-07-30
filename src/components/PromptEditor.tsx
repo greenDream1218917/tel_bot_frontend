@@ -72,6 +72,14 @@ export function PromptEditor({ prompt, onPromptChange }: PromptEditorProps) {
         </div>
 
         <div className="relative">
+          {prompt.includes('{{data}}') && (
+            <Badge
+              variant="secondary"
+              className="absolute top-2 right-2 bg-success/20 text-success border-success/30 animate-bounce-in"
+            >
+              👍
+            </Badge>
+          )}
           <Textarea
             placeholder="Enter your custom ChatGPT prompt here... Use {{data}} to insert the fetched signal data."
             value={prompt}
@@ -85,15 +93,6 @@ export function PromptEditor({ prompt, onPromptChange }: PromptEditorProps) {
               ${isFocused ? 'shadow-glow' : ''}
             `}
           />
-          
-          {prompt.includes('{{data}}') && (
-            <Badge 
-              variant="secondary" 
-              className="absolute top-2 right-2 bg-success/20 text-success border-success/30 animate-bounce-in"
-            >
-              Template Ready
-            </Badge>
-          )}
         </div>
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
