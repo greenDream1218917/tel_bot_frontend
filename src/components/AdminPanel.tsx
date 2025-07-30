@@ -33,14 +33,23 @@ export function AdminPanel() {
 
   // API Functions
   const fetchSignalData = async (type: string) => {
+    type = "/" + type;
+    console.log(type);
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:8000/api/fetch-data?type=${type}`);
+      const response = await fetch('http://localhost:8000/api/fetch-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_name: "session_17743635997",
+          messages: [type]
+        })
+      });
       if (!response.ok) throw new Error('Failed to fetch data');
 
       const data = await response.json();
-      setFetchedData(prev => ({ ...prev, [type]: data }));
-
+      setFetchedData(prev => ({ ...prev, [type]: data.responses[0] }));
+      console.log(fetchedData);
       toast({
         title: "Data fetched",
         description: `Successfully fetched ${type} signal data`,
